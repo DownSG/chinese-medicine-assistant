@@ -12,8 +12,9 @@
             "dest": "app.py"
         }
     ],
-    "env": {
-        "FLASK_ENV": "production",
-        "PYTHONPATH": "."
+    "build": {
+        "env": {
+            "PYTHONPATH": "."
+        }
     }
 } 
