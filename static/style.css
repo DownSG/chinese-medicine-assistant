@@ -1,0 +1,145 @@
+/* style.css 文件内容 */
+
+body {
+    font-family: Arial, sans-serif;
+    background: url('{{ url_for("static", filename="background.jpg") }}') no-repeat center center fixed; /* 添加背景图片 */
+    background-size: cover; /* 确保背景图片覆盖整个页面 */
+    color: white; /* 文字颜色 */
+    min-height: 100vh; /* 设置最小高度为视口高度 */
+    display: flex;
+    flex-direction: column;
+}
+
+.card {
+    background-image: url('{{ url_for("static", filename="background2.jpg") }}'); /* 添加背景图案 */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5); /* 边框 */
+}
+
+.card-header h1,
+.card .form-label,
+.card p,
+.card strong,
+.card textarea,
+.card button {
+    color: black;
+    text-shadow: 1px 1px 2px white; /* 白色描边 */
+    font-weight: bold; /* 字体加粗 */
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white; /* 按钮文字颜色 */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    color: white; /* 按钮文字颜色 */
+}
+
+.form-control {
+    background-color: transparent; /* 输入框背景透明 */
+    border: 1px solid white; /* 输入框边框白色 */
+    color: black; /* 输入框文字颜色 */
+    font-weight: bold; /* 输入框文字加粗 */
+}
+
+/* 设置回复框背景图片并重复显示 */
+.chat-output {
+    background-image: url('{{ url_for("static", filename="reply-bg.jpg") }}');
+    background-repeat: repeat-y;
+    padding: 10px;
+    color: black;
+    border-radius: 5px;
+    background-color: transparent; /* 确保背景颜色透明 */
+}
+
+/* 移除网站简介和作者寄语的边框 */
+.sidebar .collapse .card {
+    border: none !important;
+}
+
+.sidebar .collapse .card .card-body {
+    background-color: transparent !important;
+}
+
+.sidebar .collapse button {
+    border: none !important;
+}
+
+/* 居中标题 */
+.card h1 {
+    text-align: center;
+    min-width: 500px; /* 根据实际情况调整 */
+}
+
+/* 回复框容器 */
+.chat-output-container {
+    position: relative; /* 设置为相对定位 */
+}
+
+/* 回复框样式 */
+.chat-output {
+    background-image: url('{{ url_for("static", filename="reply-bg.jpg") }}');
+    background-repeat: repeat-y;
+    padding: 10px;
+    color: black;
+    border-radius: 5px;
+    background-color: transparent; /* 确保背景颜色透明 */
+}
+
+/* 标题样式 */
+.text-title {
+    color: white; /* 文字颜色 */
+    font-size: 48px; /* 一号字体大小 */
+    font-family: "Songti SC", serif; /* 宋体 */
+    text-align: center; /* 居中文本 */
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 新增回复框文本样式 */
+.assistant-reply {
+    font-size: 14px; /* 小四号字体大小 */
+    font-family: "SimHei", serif; /* 黑体 */
+    color: black; /* 文字颜色 */
+}
+
+/* 底部按钮容器 */
+.footer-buttons-container {
+    position: fixed; /* 固定定位 */
+    bottom: 0; /* 距离底部边缘为0 */
+    left: 0; /* 左侧距离 */
+    width: 100%; /* 宽度占满屏幕 */
+    background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+    padding: 10px; /* 内边距 */
+    display: flex; /* 使用 Flexbox 布局 */
+    justify-content: space-around; /* 按钮之间平均分布 */
+}
+
+.footer-buttons-container .btn-group .btn {
+    margin: 0; /* 移除默认的边距 */
+}
+
+.sidebar {
+    margin-bottom: 60px; /* 为底部按钮预留空间 */
+}
+
+.sidebar .collapse {
+    margin-top: 20px; /* 上方留出一定的间距 */
+}

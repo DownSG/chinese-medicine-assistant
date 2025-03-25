@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中医养生助手</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
+        body {
+            font-family: Arial, sans-serif;
+            background: url('{{ url_for("static", filename="background.jpg") }}') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+            background-image: url('{{ url_for("static", filename="background2.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .typing {
+            overflow: hidden;
+            white-space: pre-wrap;
+            animation: typing 2s steps(40, end);
+        }
+        @keyframes typing {
+            from { max-height: 0; }
+            to { max-height: 1000px; }
+        }
+        .term-highlight {
+            background-color: #fde68a;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+        .chat-output {
+            background-image: url('{{ url_for("static", filename="reply-bg.jpg") }}');
+            background-repeat: repeat-y;
+            padding: 10px;
+            color: black;
+            border-radius: 5px;
+            background-color: transparent;
+        }
+        .title-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+        }
+        .title-container::before,
+        .title-container::after {
+            content: "❖";
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #c4a484;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .title-container::before {
+            left: 20%;
+        }
+        .title-container::after {
+            right: 20%;
+        }
+        .title-text {
+            font-family: "Noto Serif SC", "宋体", serif;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #8b4513;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 4px;
+            background: linear-gradient(45deg, #8b4513, #c4a484);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 0.5rem 2rem;
+            display: inline-block;
+        }
+        .back-button {
+            font-family: "Noto Serif SC", "宋体", serif;
+            font-size: 1.1rem;
+            color: #8b4513;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateX(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+        .back-icon {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <a href="{{ url_for('home') }}" class="back-button">
+                <span class="back-icon">←</span>
+                返回首页
+            </a>
+            <div class="title-container">
+                <h1 class="title-text">中医养生智能助手</h1>
+            </div>
+            <div class="w-24"></div> <!-- 为了保持标题居中 -->
+        </div>
+        
+        <div class="chat-container bg-white rounded-lg shadow-lg p-6 mb-6">
+            {% for chat in chat_history %}
+            <div class="mb-4">
+                <div class="flex items-start mb-2">
+                    <div class="bg-blue-100 rounded-lg p-3 max-w-3xl">
+                        <p class="text-gray-800">{{ chat.user_input }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start justify-end">
+                    <div class="chat-output rounded-lg p-3 max-w-3xl">
+                        <p class="text-gray-800 {% if loop.last %}typing{% endif %}" id="{% if loop.last %}latest-response{% else %}response-{{ loop.index }}{% endif %}">{{ chat.assistant_response }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if error_message %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ error_message }}</span>
+            </div>
+            {% endif %}
+
+            {% if relevant_terms %}
+            <div class="bg-yellow-50 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold mb-2">相关中医术语解释：</h3>
+                {% for term in relevant_terms %}
+                <div class="mb-2">
+                    <span class="font-medium">{{ term.term }}：</span>
+                    <span>{{ term.definition }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('generate_text') }}" class="space-y-4">
+                <div>
+                    <textarea name="prompt" rows="4" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="请输入您的问题..." required></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        发送问题
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 自动滚动到底部
+        function scrollToBottom() {
+            const chatContainer = document.querySelector('.chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 打字机效果
+        function typeWriter(element, text, index = 0) {
+            if (index < text.length) {
+                element.textContent = text.substring(0, index + 1);
+                setTimeout(() => typeWriter(element, text, index + 1), 50);
+            }
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', () => {
+            scrollToBottom();
+            
+            // 对最新的回复应用打字机效果
+            const latestResponse = document.getElementById('latest-response');
+            if (latestResponse) {
+                const text = latestResponse.textContent;
+                latestResponse.textContent = '';
+                typeWriter(latestResponse, text);
+            }
+        });
+
+        // 表单提交时显示加载状态
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const button = this.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.innerHTML = '正在思考...';
+        });
+    </script>
+</body>
+</html>

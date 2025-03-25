@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>初体验</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-image: url('images/background.jpg'); /* 设置背景图片 */
+            background-size: cover; /* 使图片覆盖整个屏幕 */
+            background-position: center; /* 居中对齐 */
+            background-repeat: no-repeat; /* 不重复图片 */
+            min-height: 100vh; /* 最小高度为视口高度 */
+            display: flex; /* 使用 Flexbox 布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            margin: 0; /* 移除默认边距 */
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .random-color {
+            transition: background-color 0.3s ease;
+        }
+    </style>
+    <script>
+        function randomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function applyRandomColor(button) {
+            button.style.backgroundColor = randomColor();
+            button.style.color = (button.style.backgroundColor === 'rgb(0, 0, 0)') ? 'white' : 'black';
+        }
+
+        window.onload = function() {
+            var buttons = document.querySelectorAll('.btn');
+            buttons.forEach(function(button) {
+                applyRandomColor(button);
+            });
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <button type="button" class="btn btn-primary random-color">（首选项）Primary</button>
+        <button type="button" class="btn btn-success random-color">（成功）Success</button>
+        <button type="button" class="btn btn-info random-color">（一般信息）Info</button>
+        <button type="button" class="btn btn-warning random-color">（警告）Warning</button>
+    </div>
+</body>
+</html>
