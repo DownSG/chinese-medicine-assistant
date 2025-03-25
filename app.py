@@ -5,8 +5,16 @@ import uuid
 import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
+import tempfile
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+# 创建临时目录
+temp_dir = tempfile.gettempdir()
+instance_path = os.path.join(temp_dir, 'instance')
+
+app = Flask(__name__, 
+           static_folder='static', 
+           template_folder='templates',
+           instance_path=instance_path)
 app.secret_key = os.environ.get('SECRET_KEY', 'chinese_medicine_assistant_secret_key_2024')
 
 # 配置数据库
