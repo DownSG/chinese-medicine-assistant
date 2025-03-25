@@ -36,10 +36,8 @@ if not OPENAI_API_KEY:
     raise ValueError("未设置 OPENAI_API_KEY 环境变量")
 
 # 初始化 OpenAI 客户端
-client = openai.Client(
-    api_key=OPENAI_API_KEY,
-    base_url='https://spark-api-open.xf-yun.com/v1'
-)
+openai.api_key = OPENAI_API_KEY
+openai.api_base = 'https://spark-api-open.xf-yun.com/v1'
 
 def init_db():
     with app.app_context():
@@ -105,7 +103,7 @@ def generate_text():
     full_prompt = f"{internal_prompt}\n\n用户问题：{prompt}"
 
     try:
-        completion = client.chat.completions.create(
+        completion = openai.ChatCompletion.create(
             model='generalv3',
             messages=[{
                 "role": "user",
