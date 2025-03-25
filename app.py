@@ -38,8 +38,7 @@ if not OPENAI_API_KEY:
 # 初始化 OpenAI 客户端
 client = openai.OpenAI(
     api_key=OPENAI_API_KEY,
-    base_url='https://spark-api-open.xf-yun.com/v1',
-    timeout=30.0
+    base_url='https://spark-api-open.xf-yun.com/v1'
 )
 
 def init_db():
