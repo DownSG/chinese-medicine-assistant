@@ -5,16 +5,9 @@ import uuid
 import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
-import tempfile
 
-# 创建临时目录
-temp_dir = tempfile.gettempdir()
-instance_path = os.path.join(temp_dir, 'instance')
-
-app = Flask(__name__, 
-           static_folder='static', 
-           template_folder='templates',
-           instance_path=instance_path)
+# 创建Flask应用
+app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'chinese_medicine_assistant_secret_key_2024')
 
 # 配置数据库
@@ -34,7 +27,8 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['INSTANCE_FOLDER'] = None
 
 # 初始化数据库
-db = SQLAlchemy(app)
+db = SQLAlchemy()
+db.init_app(app)
 
 # 加载环境变量
 load_dotenv()
