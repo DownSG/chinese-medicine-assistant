@@ -8,32 +8,47 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'chinese_medicine_assistant_secret_key_2024')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tcm_assistant.db')
+
+# 配置数据库
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tmp/tcm_assistant.db')
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith("postgres://"):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
-    'pool_recycle': 300,
-    'pool_timeout': 30
+    'pool_recycle': 60,
+    'pool_timeout': 5,
+    'pool_size': 5,
+    'max_overflow': 10
 }
+
+# 初始化数据库
 db = SQLAlchemy(app)
 
 # 确保数据库目录存在
 db_dir = os.path.dirname(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', ''))
 if db_dir and not os.path.exists(db_dir):
-    os.makedirs(db_dir)
+    try:
+        os.makedirs(db_dir)
+    except OSError as e:
+        print(f"无法创建数据库目录: {str(e)}")
+        # 如果无法创建目录，使用内存数据库
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        db = SQLAlchemy(app)
 
 # 加载环境变量
 load_dotenv()
 
 # 获取环境变量
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
+    raise ValueError("未设置 OPENAI_API_KEY 环境变量")
 
 # 初始化 OpenAI 客户端
 client = openai.OpenAI(
     api_key=OPENAI_API_KEY,
-    base_url='https://spark-api-open.xf-yun.com/v1'
+    base_url='https://spark-api-open.xf-yun.com/v1',
+    timeout=30.0
 )
 
 def init_db():

@@ -12,12 +12,18 @@
             "dest": "app.py"
         }
     ],
+    "functions": {
+        "app.py": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
+    },
     "build": {
         "env": {
             "PYTHONPATH": ".",
-            "FLASK_ENV": "production",
+            "FLASK_DEBUG": "0",
             "FLASK_APP": "app.py",
-            "DATABASE_URL": "sqlite:///tcm_assistant.db"
+            "DATABASE_URL": "sqlite:///tmp/tcm_assistant.db"
         }
     }
 } 
