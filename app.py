@@ -36,7 +36,7 @@ if not OPENAI_API_KEY:
     raise ValueError("未设置 OPENAI_API_KEY 环境变量")
 
 # 初始化 OpenAI 客户端
-client = openai.OpenAI(
+client = openai.Client(
     api_key=OPENAI_API_KEY,
     base_url='https://spark-api-open.xf-yun.com/v1'
 )
