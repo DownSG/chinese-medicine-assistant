@@ -10,7 +10,7 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'chinese_medicine_assistant_secret_key_2024')
 
 # 配置数据库
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tmp/tcm_assistant.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///:memory:')
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith("postgres://"):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -24,17 +24,6 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 
 # 初始化数据库
 db = SQLAlchemy(app)
-
-# 确保数据库目录存在
-db_dir = os.path.dirname(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', ''))
-if db_dir and not os.path.exists(db_dir):
-    try:
-        os.makedirs(db_dir)
-    except OSError as e:
-        print(f"无法创建数据库目录: {str(e)}")
-        # 如果无法创建目录，使用内存数据库
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        db = SQLAlchemy(app)
 
 # 加载环境变量
 load_dotenv()
@@ -68,7 +57,6 @@ def init_db():
                         definition="人体生命活动的基本物质，气主推动运行，血主营养濡润",
                         category="基础理论"
                     ),
-                    # 可以添加更多示例数据
                 ]
                 for knowledge in sample_knowledge:
                     db.session.add(knowledge)
@@ -84,19 +72,27 @@ def home():
 def index():
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4())
-    chat_history = ChatHistory.query.filter_by(session_id=session['session_id']).order_by(ChatHistory.timestamp).all()
+    try:
+        chat_history = ChatHistory.query.filter_by(session_id=session['session_id']).order_by(ChatHistory.timestamp).all()
+    except Exception as e:
+        print(f"数据库查询错误: {str(e)}")
+        chat_history = []
     return render_template('index.html', generated_text='', error_message='', chat_history=chat_history)
 
 @app.route('/generate', methods=['POST'])
 def generate_text():
     prompt = request.form['prompt']
     
-    # 检查输入是否包含中医术语
-    tcm_terms = TCMKnowledge.query.all()
-    relevant_terms = []
-    for term in tcm_terms:
-        if term.term in prompt:
-            relevant_terms.append(term)
+    try:
+        # 检查输入是否包含中医术语
+        tcm_terms = TCMKnowledge.query.all()
+        relevant_terms = []
+        for term in tcm_terms:
+            if term.term in prompt:
+                relevant_terms.append(term)
+    except Exception as e:
+        print(f"数据库查询错误: {str(e)}")
+        relevant_terms = []
     
     # 构建提示词，包含相关术语解释
     internal_prompt = "请使用中医药的专业知识来回答这个问题。"
@@ -119,15 +115,23 @@ def generate_text():
         generated_text = completion.choices[0].message.content
         
         # 保存到数据库
-        chat_record = ChatHistory(
-            user_input=prompt,
-            assistant_response=generated_text,
-            session_id=session['session_id']
-        )
-        db.session.add(chat_record)
-        db.session.commit()
+        try:
+            chat_record = ChatHistory(
+                user_input=prompt,
+                assistant_response=generated_text,
+                session_id=session['session_id']
+            )
+            db.session.add(chat_record)
+            db.session.commit()
+        except Exception as e:
+            print(f"数据库保存错误: {str(e)}")
         
-        chat_history = ChatHistory.query.filter_by(session_id=session['session_id']).order_by(ChatHistory.timestamp).all()
+        try:
+            chat_history = ChatHistory.query.filter_by(session_id=session['session_id']).order_by(ChatHistory.timestamp).all()
+        except Exception as e:
+            print(f"数据库查询错误: {str(e)}")
+            chat_history = []
+            
         return render_template('index.html', 
                              generated_text=generated_text, 
                              error_message='', 
@@ -135,14 +139,23 @@ def generate_text():
                              relevant_terms=relevant_terms)
     except Exception as e:
         error_message = f"API Error: {str(e)}"
+        try:
+            chat_history = ChatHistory.query.filter_by(session_id=session['session_id']).all()
+        except Exception as e:
+            print(f"数据库查询错误: {str(e)}")
+            chat_history = []
         return render_template('index.html', 
                              generated_text='', 
                              error_message=error_message, 
-                             chat_history=ChatHistory.query.filter_by(session_id=session['session_id']).all())
+                             chat_history=chat_history)
 
 @app.route('/history')
 def history():
-    chat_history = ChatHistory.query.filter_by(session_id=session['session_id']).order_by(ChatHistory.timestamp).all()
+    try:
+        chat_history = ChatHistory.query.filter_by(session_id=session['session_id']).order_by(ChatHistory.timestamp).all()
+    except Exception as e:
+        print(f"数据库查询错误: {str(e)}")
+        chat_history = []
     return jsonify([{
         'user': chat.user_input,
         'assistant': chat.assistant_response,
@@ -155,6 +168,3 @@ if __name__ == '__main__':
 else:
     # 为Vercel提供应用实例
     application = app
-    # 确保数据库初始化
-    with app.app_context():
-        init_db()

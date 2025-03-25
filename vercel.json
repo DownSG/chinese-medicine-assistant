@@ -23,7 +23,7 @@
             "PYTHONPATH": ".",
             "FLASK_DEBUG": "0",
             "FLASK_APP": "app.py",
-            "DATABASE_URL": "sqlite:///tmp/tcm_assistant.db"
+            "DATABASE_URL": "sqlite:///:memory:"
         }
     }
 } 
