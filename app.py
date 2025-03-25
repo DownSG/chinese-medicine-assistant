@@ -30,6 +30,9 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'max_overflow': 10
 }
 
+# 禁用实例文件夹
+app.config['INSTANCE_FOLDER'] = None
+
 # 初始化数据库
 db = SQLAlchemy(app)
 
