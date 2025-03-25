@@ -17,10 +17,7 @@ if app.config['SQLALCHEMY_DATABASE_URI'].startswith("postgres://"):
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
-    'pool_recycle': 60,
-    'pool_timeout': 5,
-    'pool_size': 5,
-    'max_overflow': 10
+    'pool_recycle': 60
 }
 
 # 禁用实例文件夹
