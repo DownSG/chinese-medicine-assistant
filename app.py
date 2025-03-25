@@ -4,17 +4,25 @@ from models import db, ChatHistory, TCMKnowledge
 import uuid
 import os
 from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.environ.get('SECRET_KEY', 'chinese_medicine_assistant_secret_key_2024')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tcm_assistant.db')
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith("postgres://"):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+    'pool_timeout': 30
+}
+db = SQLAlchemy(app)
 
 # 确保数据库目录存在
-os.makedirs(os.path.dirname(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')), exist_ok=True)
-
-db.init_app(app)
+db_dir = os.path.dirname(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', ''))
+if db_dir and not os.path.exists(db_dir):
+    os.makedirs(db_dir)
 
 # 加载环境变量
 load_dotenv()
@@ -30,25 +38,28 @@ client = openai.OpenAI(
 
 def init_db():
     with app.app_context():
-        db.create_all()
-        # 添加一些示例中医知识
-        if not TCMKnowledge.query.first():
-            sample_knowledge = [
-                TCMKnowledge(
-                    term="阴阳",
-                    definition="中医基本理论的核心概念，描述宇宙万物对立统一的两个方面",
-                    category="基础理论"
-                ),
-                TCMKnowledge(
-                    term="气血",
-                    definition="人体生命活动的基本物质，气主推动运行，血主营养濡润",
-                    category="基础理论"
-                ),
-                # 可以添加更多示例数据
-            ]
-            for knowledge in sample_knowledge:
-                db.session.add(knowledge)
-            db.session.commit()
+        try:
+            db.create_all()
+            # 添加一些示例中医知识
+            if not TCMKnowledge.query.first():
+                sample_knowledge = [
+                    TCMKnowledge(
+                        term="阴阳",
+                        definition="中医基本理论的核心概念，描述宇宙万物对立统一的两个方面",
+                        category="基础理论"
+                    ),
+                    TCMKnowledge(
+                        term="气血",
+                        definition="人体生命活动的基本物质，气主推动运行，血主营养濡润",
+                        category="基础理论"
+                    ),
+                    # 可以添加更多示例数据
+                ]
+                for knowledge in sample_knowledge:
+                    db.session.add(knowledge)
+                db.session.commit()
+        except Exception as e:
+            print(f"数据库初始化错误: {str(e)}")
 
 @app.route('/')
 def home():

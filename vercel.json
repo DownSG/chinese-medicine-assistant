@@ -15,7 +15,9 @@
     "build": {
         "env": {
             "PYTHONPATH": ".",
-            "FLASK_ENV": "production"
+            "FLASK_ENV": "production",
+            "FLASK_APP": "app.py",
+            "DATABASE_URL": "sqlite:///tcm_assistant.db"
         }
     }
 } 
